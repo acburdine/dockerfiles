@@ -5,7 +5,7 @@ Docker image that will serve markdown-formatted files as a slideshow, using [rem
 ## Usage
 
 - `docker pull acburdine/slides:latest`
-- `docker run --rm -d --name my-slideshow -p 3000:3000 -v /path/to/slides/dir:/opt/slides` acburdine/slides:latest
+- `docker run --rm -d --name my-slideshow -p 3000:3000 -v /path/to/slides/dir:/opt/slides acburdine/slides:latest`
 - Visit localhost:3000 in your browser
 
 ## Notes
