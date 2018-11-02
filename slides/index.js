@@ -4,7 +4,8 @@ const http = require('http');
 const url = require('url');
 
 const port = process.env.PORT || 3000;
-const template = fs.readFileSync('./index.html', {encoding: 'utf8'});
+const slideTemplate = fs.readFileSync('./slideshow.html', {encoding: 'utf8'});
+const indexTemplate = fs.readFileSync('./index.html', {encoding: 'utf8'});
 const slidesDir = process.env.SLIDES_DIR || '/opt/slides';
 const slideExt = process.env.SLIDES_EXT || '.md';
 
@@ -16,8 +17,17 @@ function buildContent(slideFile) {
 
   return {
     title,
-    contents: template.replace('%%CONTENT%%', contents).replace('%%TITLE%%', title)
+    contents: slideTemplate.replace('%%CONTENT%%', contents).replace('%%TITLE%%', title)
   };
+}
+
+function buildIndex() {
+  const list = fs.readdirSync(slidesDir).filter(file => file.endsWith(slideExt)).map(file => {
+    const title = path.basename(file, slideExt);
+    return `<li><a href="/${title}">${title}<a></li>`;
+  }).join('\n');
+
+  return indexTemplate.replace('%%LIST%%', list);
 }
 
 const slides = fs.readdirSync(slidesDir).reduce((slides, slideFile) => {
@@ -44,14 +54,19 @@ const handler = (request, response) => {
   const parsedUrl = url.parse(request.url);
   const slide = parsedUrl.pathname.replace(/^\//, '');
 
+  response.setHeader('Content-Type', 'text/html');
+
+  if (parsedUrl.pathname === '/') {
+    response.end(buildIndex());
+    return;
+  }
+
   if (!slides[slide]) {
     response.status = 404;
-    response.setHeader('Content-Type', 'text/html');
     response.end('<!DOCTYPE html><html><body><h1>Page not found</h1></body></html>');
     return;
   }
 
-  response.setHeader('Content-Type', 'text/html');
   response.end(slides[slide]);
 }
 
