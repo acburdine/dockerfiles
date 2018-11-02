@@ -55,11 +55,18 @@ const handler = (request, response) => {
   response.end(slides[slide]);
 }
 
+function shutdown() {
+  console.log('Shutting down....');
+  process.exit(0);
+}
+
+process.removeAllListeners('SIGINT').on('SIGINT', shutdown).removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
+
 const server = http.createServer(handler);
 server.listen(port, (err) => {
   if (err) {
     console.error('Something went wrong starting the server');
-    return;
+    process.exit(1);
   }
 
   console.log(`Server is listening on port ${port}`);
